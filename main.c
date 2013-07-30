@@ -23,8 +23,10 @@
 #define TRIPLE_CLICK 3
 
 bool bDragging = false;
+Ascii2KeyCodeTable ttable;
 
 int main (int argc, const char * argv[]) {
+  InitAscii2KeyCodeTable(&ttable);
   int cnt;
   for (cnt = 1; cnt < argc; cnt++) {
     processCommand(argv[cnt]);
@@ -35,7 +37,7 @@ int main (int argc, const char * argv[]) {
 void processCommand(const char *cmd) {
   int tmpx, tmpy, btn;
   float tmpInterval;
-  UInt32 tmpkc;
+  char tmpkc;
   char str[CMD_STRING_MAXLEN];
 
   bzero(str, CMD_STRING_MAXLEN);
@@ -95,20 +97,20 @@ void processCommand(const char *cmd) {
   } else if (IS_CMD(cmd, "press ")) {
 
     print_msg("Pressing key.");
-    sscanf(cmd, "press %x", &tmpkc);
-    keyPress((CGKeyCode)tmpkc, NULL);
+    sscanf(cmd, "press %d", &tmpkc);
+    keyPress(tmpkc, NULL);
 
   } else if (IS_CMD(cmd, "release ")) {
 
     print_msg("Releasing key.");
-    sscanf(cmd, "release %x", &tmpkc);
-    keyRelease((CGKeyCode)tmpkc, NULL);
+    sscanf(cmd, "release %d", &tmpkc);
+    keyRelease(tmpkc, NULL);
 
   } else if (IS_CMD(cmd, "hit ")) {
 
     print_msg("Hitting key.");
-    sscanf(cmd, "hit %x", &tmpkc);
-    keyHit((CGKeyCode)tmpkc, NULL);
+    sscanf(cmd, "hit %d", &tmpkc);
+    keyHit(tmpkc, NULL);
 
   } else if (IS_CMD(cmd, "type ")) {
 
@@ -297,8 +299,6 @@ void mouseDrag(int btn, int posX, int posY) {
 /* KEYBOARD INPUT */
 
 void typeString(char *str) {
-  Ascii2KeyCodeTable ttable;
-  InitAscii2KeyCodeTable(&ttable);
 
   int i;
   char chr;
@@ -311,21 +311,27 @@ void typeString(char *str) {
     if (KeyCodeToAscii(kc) != chr) {
       flags = kCGEventFlagMaskShift;
     }
-    keyHit((CGKeyCode)kc, flags);
+    keyHit(chr, flags);
   }
 }
 
-void keyHit(CGKeyCode kc, CGEventFlags flags) {
-  keyPress(kc, flags);
+void keyHit(int chr, CGEventFlags flags) {
+  keyPress(chr, flags);
   usleep(TYPOMATIC_RATE);
-  keyRelease(kc, flags);
+  keyRelease(chr, flags);
 }
 
-void keyPress(CGKeyCode kc, CGEventFlags flags) {
+void keyPress(int chr, CGEventFlags flags) {
+  UInt32 kc = AsciiToKeyCode(&ttable, chr);
+  if (KeyCodeToAscii(kc) != (char)chr) 
+    flags = kCGEventFlagMaskShift;
   toKey(kc, flags, true);
 }
 
-void keyRelease(CGKeyCode kc, CGEventFlags flags) {
+void keyRelease(int chr, CGEventFlags flags) {
+  UInt32 kc = AsciiToKeyCode(&ttable, chr);
+  if (KeyCodeToAscii(kc) != (char)chr) 
+    flags = kCGEventFlagMaskShift;
   toKey(kc, flags, false);
 }
 

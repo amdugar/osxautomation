@@ -11,9 +11,9 @@ void mouseRelease(int btn, int clickType);
 void mouseClick(int btn, int clickType);
 void mouseDrag(int btn, int posX, int posY);
 void typeString(char *str);
-void keyHit(CGKeyCode kc, CGEventFlags flags);
-void keyPress(CGKeyCode kc, CGEventFlags flags);
-void keyRelease(CGKeyCode kc, CGEventFlags flags);
+void keyHit(int kc, CGEventFlags flags);
+void keyPress(int kc, CGEventFlags flags);
+void keyRelease(int kc, CGEventFlags flags);
 void toKey(CGKeyCode kc, CGEventFlags flags, bool upOrDown);
 
 // iGetKey crap
