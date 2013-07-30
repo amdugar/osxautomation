@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- saved from url=(0056)file:///Users/Amit/realMobile/deploy/static/webpage.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>Browserstack: Live</title>
+    <link rel="shortcut icon" href="/.resources/favicon.ico"/>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type='text/javascript'></script>
+    <script src="util.js" type='text/javascript'></script>
+    <script src="keyboard.js" type='text/javascript'></script>
+    <style>
+      * { user-select:none!important;-webkit-user-select:none!important;-moz-user-select:none; }
+    </style>
+    <script>
+      var dragging = false;
+      var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
+      var ws = new Socket("ws://10.0.0.9:8080");
+      function posOf(o) {
+        var l = t = 0;
+        if (o.offsetParent) {
+          do {
+            l+=o.offsetLeft;
+            t+=o.offsetTop;
+          } while(o=o.offsetParent);
+        }
+        return [l,t];
+      }
+      function eventPos(e) {
+        e=e||window.event;
+        if (typeof(e.offsetX)=='undefined') {
+          var p = posOf(e.target);
+          return [e.pageX-p[0],e.pageY-p[1]];
+        }
+        return [e.offsetX,e.offsetY];
+      }
+      function touchquery(e) {
+        var p = eventPos(e);
+        //return (p[0]*(900/720))+'&'+(p[1]*(1440/1280));
+        return (p[0]*(1440/1280))+'&'+(p[1]*(900/720));
+      }
+
+      if (typeof XMLHttpRequest == "undefined")
+      XMLHttpRequest = function () {
+        try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); }
+        catch (e) {}
+        try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); }
+        catch (e) {}
+        try { return new ActiveXObject("Msxml2.XMLHTTP"); }
+        catch (e) {}
+        throw new Error("This browser does not support XMLHttpRequest.");
+      };
+      function sendEvent(u) {
+        ws.send(u);
+      }
+    </script>
+  </head>
+  <body>
+    <div style="background: #ccc url(iPad.png) no-repeat center top;width: 1280px;height: 720px;margin:0 auto 0 auto">
+      <script type="text/javascript" src="jwplayer/jwplayer.js"></script>
+      <div id="myElement" style="width:1280px;height:720px;z-index:10;position:relative">
+        <div id="flash_div"> </div>
+        <div id="overlay" style="width:1280px;height:720px;z-index:10;position:absolute;top:0; left:0"
+          onmousedown="sendEvent('mousepress '+touchquery(event));dragging=true;"
+          onmousemove="if (dragging) sendEvent('/press'+touchquery(event));"
+          onmouseup="sendEvent('mouserelease '+touchquery(event));dragging=false;"
+          ></div>
+      </div>
+      <script type="text/javascript">
+        jwplayer("flash_div").setup({
+                height: "100%",
+                width: "100%",
+                autostart: true,
+                file: "rtmp://169.254.74.65/live/mystream",
+                rtmp: {
+                bufferlength: 0.05
+                }
+        });
+     </script>
+    </div>
+    <script>
+      function keyPress(keysym, down, e) {
+        if(down)
+        {
+          sendEvent('keypress '+e.keyCode);
+        }
+        else
+        {
+          sendEvent('keyrelease '+e.keyCode);
+        }
+        var d = down ? "down" : " up ";
+        msg = "keyPress " + d + " keysym: " + keysym +
+        " (key: " + e.keyCode + ", char: " + e.charCode +
+        ", which: " + e.which +")";
+        console.log(msg);
+      }
+
+     
+      window.onload = function() {
+        keyboard = new Keyboard({'target': document,
+          'onKeyPress': keyPress});
+
+        keyboard.grab();
+      }
+
+      </script>
+    
+
+</body></html>
