@@ -13,7 +13,7 @@
     <script>
       var dragging = false;
       var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-      var ws = new Socket("ws://10.0.0.9:8080");
+      var ws = new Socket("ws://169.254.74.65:8080");
       function posOf(o) {
         var l = t = 0;
         if (o.offsetParent) {
@@ -49,19 +49,28 @@
         throw new Error("This browser does not support XMLHttpRequest.");
       };
       function sendEvent(u) {
+        console.log(u);
         ws.send(u);
       }
     </script>
   </head>
   <body>
-    <div style="background: #ccc url(iPad.png) no-repeat center top;width: 1280px;height: 720px;margin:0 auto 0 auto">
+    <div style="background: #ccc url(iPad.png) no-repeat center top;width:1280px;height: 720px;margin:0 auto 0 auto">
       <script type="text/javascript" src="jwplayer/jwplayer.js"></script>
-      <div id="myElement" style="width:1280px;height:720px;z-index:10;position:relative">
+      <script>
+        var timer;
+        var timeout = 200;
+      </script>
+      <div id="myElement" style="width:100%;height:100%;z-index:10;position:relative">
         <div id="flash_div"> </div>
-        <div id="overlay" style="width:1280px;height:720px;z-index:10;position:absolute;top:0; left:0"
-          onmousedown="sendEvent('mousepress '+touchquery(event));dragging=true;"
-          onmousemove="if (dragging) sendEvent('/press'+touchquery(event));"
-          onmouseup="sendEvent('mouserelease '+touchquery(event));dragging=false;"
+        <div id="overlay" style="width:100%;height:100%;z-index:10;position:absolute;top:0; left:0"
+          onmousedown="sendEvent('mousedown '+touchquery(event));dragging=true;"
+          onmousemove="if (dragging) sendEvent('mousedrag '+touchquery(event));"
+          onmouseup="sendEvent('mouseup '+touchquery(event));dragging=false;" 
+          onmousewheel="sendEvent('mouseScrollY '+ event.wheelDeltaY);sendEvent('mouseScrollX ' + event.wheelDeltaX);"
+          onclick="sendEvent('mouseclick '+touchquery(event)); dragging=false;"
+          ondblclick="sendEvent('mousedoubleclick '+touchquery(event));dragging=false;"
+          oncontextmenu="sendEvent('mouserightclick '+touchquery(event));dragging=false;"
           ></div>
       </div>
       <script type="text/javascript">
@@ -71,7 +80,7 @@
                 autostart: true,
                 file: "rtmp://169.254.74.65/live/mystream",
                 rtmp: {
-                bufferlength: 0.05
+                bufferlength: 0.001
                 }
         });
      </script>
@@ -80,7 +89,7 @@
       function keyPress(keysym, down, e) {
         if(down)
         {
-          sendEvent('keypress '+e.keyCode);
+          sendEvent('keypress ' + e.shiftKey + ' ' + e.ctrlKey + ' ' + e.altKey + ' ' + e.metaKey + ' ' + e.keyCode);
         }
         else
         {
@@ -98,7 +107,7 @@
         keyboard = new Keyboard({'target': document,
           'onKeyPress': keyPress});
 
-        keyboard.grab();
+       keyboard.grab();
       }
 
       </script>
