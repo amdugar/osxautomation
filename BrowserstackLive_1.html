@@ -13,7 +13,8 @@
     <script>
       var dragging = false;
       var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-      var ws = new Socket("ws://169.254.74.65:8080");
+      var ws = new Socket("ws://192.168.0.104:9000");
+      //var ws = new Socket("ws://10.0.0.10:8080");
       function posOf(o) {
         var l = t = 0;
         if (o.offsetParent) {
@@ -55,7 +56,7 @@
     </script>
   </head>
   <body>
-    <div style="background: #ccc url(iPad.png) no-repeat center top;width:1280px;height: 720px;margin:0 auto 0 auto">
+    <div style="background: no-repeat center top;width:1280;height:720;margin:0 auto 0 auto">
       <script type="text/javascript" src="jwplayer/jwplayer.js"></script>
       <script>
         var timer;
@@ -64,23 +65,25 @@
       <div id="myElement" style="width:100%;height:100%;z-index:10;position:relative">
         <div id="flash_div"> </div>
         <div id="overlay" style="width:100%;height:100%;z-index:10;position:absolute;top:0; left:0"
-          onmousedown="sendEvent('mousedown '+touchquery(event));dragging=true;"
-          onmousemove="if (dragging) sendEvent('mousedrag '+touchquery(event));"
-          onmouseup="sendEvent('mouseup '+touchquery(event));dragging=false;" 
+          onmousedown="if(event.button == 0) {dragging=true;} sendEvent('mousedown '+event.button + ' ' +touchquery(event)); "
+          onmouseup="if (dragging) { sendEvent('mousedrag '+touchquery(event));dragging=false;sendEvent('mouseup '+touchquery(event));} else { sendEvent('mouseup '+touchquery(event));dragging=false;}" 
           onmousewheel="sendEvent('mouseScrollY '+ event.wheelDeltaY);sendEvent('mouseScrollX ' + event.wheelDeltaX);"
-          onclick="sendEvent('mouseclick '+touchquery(event)); dragging=false;"
           ondblclick="sendEvent('mousedoubleclick '+touchquery(event));dragging=false;"
-          oncontextmenu="sendEvent('mouserightclick '+touchquery(event));dragging=false;"
+          oncontextmenu="event.preventDefault();event.stopPropagation();"
           ></div>
+          <!-- move it up if required -->
+          <!-- onmousemove="if (dragging) sendEvent('mousedrag '+touchquery(event));"
+          onclick="sendEvent('mouseclick '+touchquery(event)); dragging=false;" -->
       </div>
       <script type="text/javascript">
         jwplayer("flash_div").setup({
                 height: "100%",
                 width: "100%",
                 autostart: true,
-                file: "rtmp://169.254.74.65/live/mystream",
+                file: "rtmp://169.254.74.65:1935/live/mystream",
+                //file: "rtmp://10.0.0.10:1935/live/mystream",
                 rtmp: {
-                bufferlength: 0.001
+                bufferlength: 0.01
                 }
         });
      </script>
@@ -99,7 +102,7 @@
         msg = "keyPress " + d + " keysym: " + keysym +
         " (key: " + e.keyCode + ", char: " + e.charCode +
         ", which: " + e.which +")";
-        console.log(msg);
+        console.log(e);
       }
 
      
